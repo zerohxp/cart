@@ -1,0 +1,98 @@
+<!--弹框组件  -->
+<block wx:if="{{skuModal}}">
+  	<view class="stock-keeping-unit">
+    <view class='backdrop' catchtap='closeSkuModual'></view>
+		<view class="sku-goods">
+			<block>{{sku.init(goodsSku.img)}}
+				<view class="sku-header">
+					<view class="goods-img" >
+            <image wx:if="{{goodsSku.currentGoods && goodsSku.currentGoods.img}}"  src="{{imgBaseURL + '/' + goodsSku.currentGoods.img}}"/>
+						<image wx:elif="{{goodsSku.img}}" src="{{imgBaseURL + '/' + goodsSku.img}}"></image>
+					</view>
+					<view class="goods-info">
+            <view class='goods-info-title'>
+              <image wx:if="{{goodsSku.type=='discount'}}" src="{{sourceURL}}/applet_weapp/images/icon/icon_09.png"></image>
+               <image wx:elif="{{goodsSku.type=='seckill'}}" src="{{sourceURL}}/applet_weapp/images/icon/ms.png"></image>
+                <image wx:elif="{{goodsSku.type=='tuan'}}" src="{{sourceURL}}/applet_weapp/images/icon/tg.jpg"></image><span>{{goodsSku.title}}</span>
+            </view>
+						<view class='good-price'>
+              <span class="price-unit">￥</span>
+              <span class="price" wx:if="{{goodsSku.seckillPrice}}">{{goodsSku.seckillPrice}}</span>
+							<span class="price" wx:elif="{{goodsSku.currentGoods && goodsSku.currentGoods.vipPrice}}">{{goodsSku.currentGoods.vipPrice}}</span>
+              <span class="price" wx:elif="{{goodsSku.currentGoods && goodsSku.currentGoods.price}}">{{goodsSku.currentGoods.price}}</span>
+              <span class="price" wx:elif="{{goodsSku.discount}}">{{goodsSku.vipPrice}}{{(goodsSku.is_sku != 0) ? '-' + goodsSku.vipMaxPrice : ''}}</span>
+              <span class="price" wx:else>{{goodsSku.price}}{{(goodsSku.is_sku != 0) ? '-' + goodsSku.max_price : ''}}</span>
+            </view>	
+            <view class='goods-stock'>
+              <text wx:if="{{goodsSku.currentGoods}}">
+                库存 : {{goodsSku.currentGoods.stock}}<text wx:if="{{goodsSku.unit == ''}}">件</text><text wx:else>{{goodsSku.unit}}</text></text>
+            <text wx:else>库存 : {{goodsSku.stock}}<text wx:if="{{goodsSku.unit == ''}}">件</text><text wx:else>{{goodsSku.unit}}</text></text>
+            </view>
+					</view>					
+				</view>
+			</block>
+			<scroll-view scroll-y="true" class='sku-scroll' >
+				<block wx:if="{{goodsSku.is_sku==1}}">
+					<view class="sku-content">
+						<block wx:for="{{goodsSku.goods_props}}"
+						       wx:key="goodsku_{{index}}"
+						       wx:for-index="propIndex"
+						       wx:for-item="propItem">
+							<view class="prop-item">
+								<text class="prop-name">{{propItem.name}}</text>
+								<view class="prop-values">
+                  <block  wx:for="{{propItem.gps}}" wx:key="gps_{{index}}" wx:for-index="propValueIndex" wx:for-item="propValueItem">
+                   <text class="value-item disabled" wx:if="{{goodsSku.disabledProps[propItem.id+':'+propValueItem.prop_vid]}}">{{propValueItem.prop_value}}</text> 
+                	<text wx:elif="{{goodsSku.selectedProps[propItem.id]==propValueItem.prop_vid}}" class="value-item selectedprop"  data-prop-id="{{propItem.id}}" data-prop-value-id="{{propValueItem.prop_vid}}" catchtap="selectProps">{{propValueItem.prop_value}}</text>
+                  <text wx:else class="value-item"  data-prop-id="{{propItem.id}}" data-prop-value-id="{{propValueItem.prop_vid}}" catchtap="selectProps">{{propValueItem.prop_value}}</text>
+
+                 </block>
+								</view>
+							</view>
+						</block>
+					</view>
+				</block>
+				<block wx:if="{{!hideQuality}}">
+					<view class="sku-quantity">
+						<text class='tl'>购买数量：<text class='font-orange' 
+                                            wx:if="{{goodsSku.type=='seckill' && seckill_cquota}}">活动期间每人限购{{seckill_cquota}}{{goodsSku.unit}}</text></text>
+						<view class="sku-options ">
+              <text class="bnt bnt-mimus" wx:if="{{goodsSku.selectedQuantity > 1}}" catchtap="editQuantity" data-option="minus" style="background:url({{sourceURL}}/applet_weapp/images/icon/icon_104.png) no-repeat #fff;background-size:100%"></text>
+							<text class="bnt bnt-mimus" wx:else style="background:url({{sourceURL}}/applet_weapp/images/icon/icon_100.png) no-repeat #fff;background-size:100%"></text>
+							<input type="number" name="quantity"  value="{{goodsSku.selectedQuantity}}" bindinput="inputQuantity"/>
+							<!-- <text class="normal bnt bnt-plus" wx:if="{{goodsSku.selectedQuantity < goodsSku.stock && goodsSku.type !='seckill'}}" style="background:url({{sourceURL}}/applet_weapp/images/icon/icon_101.png) no-repeat  #fff;background-size:100%" catchtap="editQuantity" data-option="plus"></text> -->
+              <text class="normal bnt bnt-plus" wx:if="{{goodsSku.selectedQuantity < goodsSku.stock}}" style="background:url({{sourceURL}}/applet_weapp/images/icon/icon_101.png) no-repeat  #fff;background-size:100%" catchtap="editQuantity" data-option="plus"></text>
+              	<text class="normal bnt bnt-plus" wx:else style="background:url({{sourceURL}}/applet_weapp/images/icon/icon_103.png) no-repeat  #fff;background-size:100%"></text>
+						</view>
+					</view>
+				</block>
+			</scroll-view>
+			<block wx:if="{{activity}}">
+        <button wx:if="{{goodsSku.btnDisabled}}" class="weui-btn cart-btn sku-btn weui-btn_disabled" ><span>确定</span></button>
+        <block wx:else>
+              <form bindsubmit="goToActivity" report-submit >
+                  <button formType="submit" class="weui-btn cart-btn sku-btn" ><span>确定</span></button>
+              </form>
+        </block>
+			</block>
+			<block wx:elif="{{button}}">
+      <button wx:if="{{goodsSku.btnDisabled}}" class="weui-btn cart-btn sku-btn weui-btn_disabled" ><span>确定</span></button>
+        <button class="weui-btn cart-btn sku-btn" wx:elif="{{isSubmit}}" ><span>提交中</span></button>
+        <block wx:else>
+            <form  bindsubmit="_goToOrder" report-submit >
+                <button formType="submit" class="weui-btn cart-btn sku-btn" ><span>确定</span></button>
+            </form>
+       </block>
+			</block>
+      <block wx:else>
+      <button wx:if="{{goodsSku.btnDisabled}}"  class="weui-btn cart-btn sku-btn weui-btn_disabled"><span>加入购物车</span></button>
+      <button wx:elif="{{isSubmit}}" class="weui-btn cart-btn sku-btn" ><span >提交中</span></button>
+      <block wx:else>
+          <form  bindsubmit="_gotoconfirm" report-submit>
+              <button formType="submit" class="weui-btn cart-btn sku-btn" ><span>加入购物车</span></button>
+          </form>
+      </block>
+      </block>
+		</view>
+	</view>
+</block>
